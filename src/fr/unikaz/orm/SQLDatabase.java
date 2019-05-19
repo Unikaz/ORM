@@ -34,7 +34,7 @@ public class SQLDatabase extends Database {
     }
 
     @Override
-    public <E extends Entity> boolean createTable(Class<E> clazz) {
+    public <E> boolean createTable(Class<E> clazz) {
         StringBuilder request = new StringBuilder();
         List<String> primaryKeys = new ArrayList<>();
         request.append("create table if not exists ").append(getEntityName(clazz)).append("(");
@@ -76,7 +76,7 @@ public class SQLDatabase extends Database {
     }
 
     @Override
-    public <E extends Entity> List<E> find(Class<E> clazz, IFilter filter) {
+    public <E> List<E> find(Class<E> clazz, IFilter filter) {
         try {
             String req = "Select * from " + getEntityName(clazz);
             if (filter != null) {
@@ -110,25 +110,14 @@ public class SQLDatabase extends Database {
     }
 
     @Override
-    public <E extends Entity> boolean insert(E entry) {
+    public <E> boolean insert(E entry) {
         List<String> fieldList = new ArrayList<>();
         List<String> valueList = new ArrayList<>();
         try {
             for (Pair<Field, Object> field : getFieldsAndValues(entry, Options.IGNORE_AUTO_INCREMENT)) {
                 field.field.setAccessible(true);
                 fieldList.add(getFieldName(field.field));
-                if (field.value == null)
-                    valueList.add("null");
-                else if (field.value instanceof String)
-                    valueList.add("'" + field.value + "'");
-                else if (field.value instanceof Integer)
-                    valueList.add(String.valueOf(field.value));
-                else if (field.value instanceof Date)
-                    valueList.add("'" + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(field.value) + "'");
-                else {
-                    System.out.println("Unknow type " + field.value.getClass().getCanonicalName());
-                    valueList.add(String.valueOf(field.value));
-                }
+                valueList.add(formatValue(field.value));
             }
             String fields = String.join(",", fieldList);
             String values = String.join(",", valueList);
@@ -147,6 +136,44 @@ public class SQLDatabase extends Database {
             e.printStackTrace();
         }
         return false;
+    }
+
+    @Override
+    public <E> boolean update(E entity) {
+        StringBuilder req = new StringBuilder();
+        req.append("update ").append(databaseName).append('.').append(getEntityName(entity.getClass()))
+                .append(" set ");
+        for (Pair<Field, Object> fieldsAndValue : getFieldsAndValues(entity, Options.IGNORE_PRIMARY_KEYS)) {
+            req.append(getFieldName(fieldsAndValue.field)).append(" = ").append(formatValue(fieldsAndValue.value));
+        }
+        req.append(" where ");
+        for (Pair<Field, Object> fieldsAndValue : getFieldsAndValues(entity, Options.ONLY_PRIMARY_KEYS)) {
+            req.append(getFieldName(fieldsAndValue.field)).append(" = ").append(formatValue(fieldsAndValue.value));
+        }
+        req.append(';');
+        try {
+            int res = connection.prepareStatement(req.toString()).executeUpdate();
+            return res > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+
+    private String formatValue(Object value) {
+        if (value == null)
+            return "null";
+        else if (value instanceof String)
+            return "'" + ((String) value).replace("\'", "\\'") + "'";
+        else if (value instanceof Integer)
+            return String.valueOf(value);
+        else if (value instanceof Date)
+            return "'" + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(value) + "'";
+        else {
+            System.out.println("Unknow type " + value.getClass().getCanonicalName());
+            return String.valueOf(value);
+        }
     }
 
 }

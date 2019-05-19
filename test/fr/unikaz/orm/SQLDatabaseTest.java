@@ -8,8 +8,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class SQLDatabaseTest {
 
@@ -18,13 +17,12 @@ class SQLDatabaseTest {
     public Connection connection;
 
 
-
-    void clearTable(){
+    void clearTable() {
         try {
             // some introspection to drop the table without changing the scope of `connection`
             Field connectionF = database.getClass().getDeclaredField("connection");
             connectionF.setAccessible(true);
-            connection = ((Connection)connectionF.get(database));
+            connection = ((Connection) connectionF.get(database));
             String req = "drop table " + Database.getEntityName(EntityTest.class) + ";";
             connection.prepareStatement(req).execute();
         } catch (NoSuchFieldException | IllegalAccessException | SQLException e) {
@@ -59,7 +57,7 @@ class SQLDatabaseTest {
             database.insert(new EntityTest(aValue, "osef"));
         }
         for (int i = 0; i < 10; i++) {
-            database.insert(new EntityTest(i+"", "osef"));
+            database.insert(new EntityTest(i + "", "osef"));
         }
 
         assert database.find(EntityTest.class, new Filter(EntityTest.class, "somevalue", Op.EQ, aValue)).size() == 10;
@@ -69,4 +67,19 @@ class SQLDatabaseTest {
 
     }
 
+    @Test
+    void update() {
+        clearTable();
+        database.createTable(EntityTest.class);
+        String initialValue = "update: initial value";
+        String updatedValue = "update: updated value and ' test";
+        EntityTest e1 = new EntityTest(initialValue, "osef");
+        database.insert(e1);
+        e1 = database.find(EntityTest.class, new Filter(EntityTest.class, "somevalue", Op.EQ, initialValue)).get(0);
+        e1.somevalue = updatedValue;
+        database.update(e1);
+        EntityTest e2 = database.find(EntityTest.class, new Filter(EntityTest.class, "id", Op.EQ, e1.id)).get(0);
+        assert e1.id.equals(e2.id);
+        assert e2.somevalue.equals(updatedValue);
+    }
 }

@@ -3,12 +3,12 @@ package fr.unikaz.orm;
 
 import fr.unikaz.orm.annotations.*;
 
-@fr.unikaz.orm.annotations.Entity(name = "test_entity")
-public class EntityTest extends Entity {
+@Entity(name = "test_entity")
+public class EntityTest {
     @AutoIncrement
     @PrimaryKey
     @Unsigned
-    private Integer id;
+    public Integer id;
     @FieldName(name = "my_value")
     public String somevalue;
     @IgnoreField
