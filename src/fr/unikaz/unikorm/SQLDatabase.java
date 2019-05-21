@@ -10,6 +10,7 @@ import fr.unikaz.unikorm.filters.Op;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -196,8 +197,9 @@ public class SQLDatabase extends Database {
                 return resultSet.getString(dbFieldName);
             if (Integer.class.equals(type))
                 return resultSet.getInt(dbFieldName);
-            else
-                System.out.println("Unknown type " + type.getCanonicalName());
+            if(Date.class.equals(type))
+                return resultSet.getTimestamp(dbFieldName, Calendar.getInstance());
+            System.out.println("Unknown type " + type.getCanonicalName() + " for " + dbFieldName);
         } catch (SQLException e) {
             e.printStackTrace();
         }
