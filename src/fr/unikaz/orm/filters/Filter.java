@@ -32,6 +32,6 @@ public class Filter implements IFilter {
         String value = o.toString();
         if(o instanceof String)
             value = "'" + o + "'";
-        return Database.getFieldName(field) + " " + op.get() + " " + value;
+        return field.getName() + " " + op.get() + " " + value;
     }
 }

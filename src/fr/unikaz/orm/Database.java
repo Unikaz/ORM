@@ -1,9 +1,13 @@
 package fr.unikaz.orm;
 
+import com.sun.corba.se.impl.orb.DataCollectorBase;
 import fr.unikaz.orm.annotations.*;
 import fr.unikaz.orm.filters.IFilter;
 
+import javax.xml.crypto.Data;
+import java.awt.image.DataBuffer;
 import java.lang.reflect.Field;
+import java.net.FileNameMap;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,45 +29,6 @@ public abstract class Database {
     //=====================================
     // Process Annotations
     //=====================================
-    public static <E> List<Field> getFields(Class<E> clazz) {
-        List<Field> fields = new ArrayList<>();
-        for (Field field : clazz.getDeclaredFields()) {
-            if (field.isAnnotationPresent(IgnoreField.class)) continue;
-            fields.add(field);
-        }
-        return fields;
-    }
-
-    public static <E> List<Pair<Field, Object>> getFieldsAndValues(E entity, Options... opts) {
-        // Handle some options
-        boolean ignoreAutoIncrements = false;
-        boolean ignorePrimaryKeys = false;
-        boolean onlyPrimaryKeys = false;
-        if (opts != null)
-            for (Options opt : opts) {
-                if (opt == Options.IGNORE_AUTO_INCREMENT)
-                    ignoreAutoIncrements = true;
-                if (opt == Options.IGNORE_PRIMARY_KEYS)
-                    ignorePrimaryKeys = true;
-                if (opt == Options.ONLY_PRIMARY_KEYS)
-                    onlyPrimaryKeys = true;
-            }
-        // process fields
-        List<Pair<Field, Object>> fields = new ArrayList<>();
-        for (Field field : entity.getClass().getDeclaredFields()) {
-            if (field.isAnnotationPresent(IgnoreField.class)) continue;
-            if (ignoreAutoIncrements && field.isAnnotationPresent(AutoIncrement.class)) continue;
-            if (ignorePrimaryKeys && field.isAnnotationPresent(PrimaryKey.class)) continue;
-            if (onlyPrimaryKeys && !field.isAnnotationPresent(PrimaryKey.class)) continue;
-            try {
-                field.setAccessible(true);
-                fields.add(new Pair<>(field, field.get(entity)));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return fields;
-    }
 
     public static String getFieldName(Field field) {
         if (field.isAnnotationPresent(FieldName.class)) {
@@ -76,5 +41,66 @@ public abstract class Database {
         if (clazz.isAnnotationPresent(Entity.class))
             return clazz.getAnnotation(Entity.class).name();
         return clazz.getName();
+    }
+
+
+    public static <E> List<DataField> getFields(Class<E> current, Options... opts){
+        return getFields(current, null, opts);
+    }
+    public static <E> List<DataField> getFields(Object entity, Options... opts){
+        return getFields(entity.getClass(), entity, opts);
+    }
+    public static <E> List<DataField> getFields(Class<E> current, Object entity, Options... opts){
+        // Handle some options
+        boolean ignoreAutoIncrements = false;
+        boolean ignorePrimaryKeys = false;
+        boolean onlyPrimaryKeys = false;
+//        boolean prefix = false;
+        if (opts != null)
+            for (Options opt : opts) {
+                if (opt == Options.IGNORE_AUTO_INCREMENT)
+                    ignoreAutoIncrements = true;
+                if (opt == Options.IGNORE_PRIMARY_KEYS)
+                    ignorePrimaryKeys = true;
+                if (opt == Options.ONLY_PRIMARY_KEYS)
+                    onlyPrimaryKeys = true;
+//                if (opt == Options.PREFIXED)
+//                    prefix = true;
+            }
+        // process fields
+        List<DataField> dataFields = new ArrayList<>();
+        for (Field field : current.getDeclaredFields()) {
+            if (field.isAnnotationPresent(IgnoreField.class)) continue;
+            if (ignoreAutoIncrements && field.isAnnotationPresent(AutoIncrement.class)) continue;
+            if (ignorePrimaryKeys && field.isAnnotationPresent(PrimaryKey.class)) continue;
+            if (onlyPrimaryKeys && !field.isAnnotationPresent(PrimaryKey.class)) continue;
+            try {
+                field.setAccessible(true);
+                Object value = null;
+                if(entity != null)
+                    value = field.get(entity);
+                if(field.isAnnotationPresent(RelativeEntity.class)){
+                    List<DataField> childDataFields = Database.getFields(field.getType(), value, Options.ONLY_PRIMARY_KEYS);
+                    if(childDataFields.size() == 1 && field.isAnnotationPresent(FieldName.class)){
+                        // if the child has only one PK, use the parent custom name for this field
+                        DataField childDataField = childDataFields.get(0);
+                        childDataField.setSpecificName(field.getAnnotation(FieldName.class).name());
+                        childDataField.setReferTo(field); // add a reference to the current field, for filling the right field during select operation
+                        dataFields.add(childDataField);
+                    }else{
+                        // use generated names
+                        for (DataField childDataField : childDataFields) {
+                            childDataField.setSpecificName(Database.getEntityName(current) + "_?_" + Database.getFieldName(childDataField.field));
+                            dataFields.add(childDataField);
+                        }
+                    }
+                }else{
+                    DataField dataField = new DataField(field);
+                    dataField.value = value;
+                    dataFields.add(dataField);
+                }
+            }catch (Exception e){}
+        }
+        return dataFields;
     }
 }
