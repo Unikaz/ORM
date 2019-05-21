@@ -1,4 +1,4 @@
-# ORM
+# Unikorm
 
 This API let's you use datasources with simple methods, without defining DAO for each entities in your projects.
 It's goal is also to give you a standard way to access multiple type of datasource (MySQL, REST API, etc.)
