@@ -1,4 +1,4 @@
-package fr.unikaz.orm;
+package fr.unikaz.unikorm;
 
 public enum Options {
     IGNORE_AUTO_INCREMENT,

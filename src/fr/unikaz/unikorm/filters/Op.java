@@ -1,4 +1,4 @@
-package fr.unikaz.orm.filters;
+package fr.unikaz.unikorm.filters;
 
 public enum Op{
     EQ("="),

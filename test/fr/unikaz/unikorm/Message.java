@@ -1,6 +1,6 @@
-package fr.unikaz.orm;
+package fr.unikaz.unikorm;
 
-import fr.unikaz.orm.annotations.*;
+import fr.unikaz.unikorm.annotations.*;
 
 import java.util.Date;
 

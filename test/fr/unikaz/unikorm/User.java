@@ -1,7 +1,7 @@
-package fr.unikaz.orm;
+package fr.unikaz.unikorm;
 
 
-import fr.unikaz.orm.annotations.*;
+import fr.unikaz.unikorm.annotations.*;
 
 @Entity(name = "user_test")
 public class User {

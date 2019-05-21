@@ -1,7 +1,7 @@
-package fr.unikaz.orm;
+package fr.unikaz.unikorm;
 
-import fr.unikaz.orm.filters.Filter;
-import fr.unikaz.orm.filters.Op;
+import fr.unikaz.unikorm.filters.Filter;
+import fr.unikaz.unikorm.filters.Op;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;

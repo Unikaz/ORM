@@ -1,11 +1,11 @@
-package fr.unikaz.orm;
+package fr.unikaz.unikorm;
 
-import fr.unikaz.orm.annotations.AutoIncrement;
-import fr.unikaz.orm.annotations.PrimaryKey;
-import fr.unikaz.orm.annotations.Unsigned;
-import fr.unikaz.orm.filters.Filter;
-import fr.unikaz.orm.filters.IFilter;
-import fr.unikaz.orm.filters.Op;
+import fr.unikaz.unikorm.annotations.AutoIncrement;
+import fr.unikaz.unikorm.annotations.PrimaryKey;
+import fr.unikaz.unikorm.annotations.Unsigned;
+import fr.unikaz.unikorm.filters.Filter;
+import fr.unikaz.unikorm.filters.IFilter;
+import fr.unikaz.unikorm.filters.Op;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;

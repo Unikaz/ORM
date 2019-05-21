@@ -1,4 +1,4 @@
-package fr.unikaz.orm;
+package fr.unikaz.unikorm;
 
 import java.lang.reflect.Field;
 

@@ -1,7 +1,7 @@
-package fr.unikaz.orm;
+package fr.unikaz.unikorm;
 
-import fr.unikaz.orm.annotations.*;
-import fr.unikaz.orm.filters.IFilter;
+import fr.unikaz.unikorm.annotations.*;
+import fr.unikaz.unikorm.filters.IFilter;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;

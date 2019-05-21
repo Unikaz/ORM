@@ -1,4 +1,4 @@
-package fr.unikaz.orm.filters;
+package fr.unikaz.unikorm.filters;
 
 import java.lang.reflect.Field;
 
