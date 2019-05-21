@@ -40,24 +40,24 @@ public class SQLDatabase extends Database {
         StringBuilder request = new StringBuilder();
         List<String> primaryKeys = new ArrayList<>();
         request.append("create table if not exists ").append(getEntityName(clazz)).append("(");
-        for (DataField field : getFields(clazz)) {
-            String fieldName = field.getName();
+        for (DataField dataField : getDataFields(clazz)) {
+            String fieldName = dataField.getName();
             request.append(fieldName).append(" ");
             // handle basic types
-            if (String.class.isAssignableFrom(field.field.getType()))
+            if (String.class.isAssignableFrom(dataField.field.getType()))
                 request.append("text");
-            else if (Integer.class.isAssignableFrom(field.field.getType()))
+            else if (Integer.class.isAssignableFrom(dataField.field.getType()))
                 request.append("int");
-            else if (Date.class.isAssignableFrom(field.field.getType()))
+            else if (Date.class.isAssignableFrom(dataField.field.getType()))
                 request.append("datetime");
 
             // handle annotations
-            if (field.field.isAnnotationPresent(Unsigned.class))
+            if (dataField.field.isAnnotationPresent(Unsigned.class))
                 request.append(" unsigned");
-            if (field.field.getDeclaringClass().equals(clazz)) {
-                if (field.field.isAnnotationPresent(AutoIncrement.class))
+            if (dataField.field.getDeclaringClass().equals(clazz)) {
+                if (dataField.field.isAnnotationPresent(AutoIncrement.class))
                     request.append(" auto_increment");
-                if (field.field.isAnnotationPresent(PrimaryKey.class))
+                if (dataField.field.isAnnotationPresent(PrimaryKey.class))
                     primaryKeys.add(fieldName);
             }
 
@@ -95,25 +95,20 @@ public class SQLDatabase extends Database {
             // read results
             while (resultSet.next()) {
                 E entity = clazz.newInstance();
-                for (DataField field : getFields(entity)) {
-                    field.field.setAccessible(true);
-                    String dbFieldName = field.field.getName();
-                    if(!field.field.getDeclaringClass().equals(clazz)){
+                for (DataField dataField : getDataFields(entity)) {
+                    dataField.field.setAccessible(true);
+                    String dbFieldName = dataField.field.getName();
+                    if (!dataField.field.getDeclaringClass().equals(clazz)) {
                         // make a select to request the child element
-                        List<?> children = find(field.field.getDeclaringClass(), new Filter(field.field.getDeclaringClass(), dbFieldName, Op.EQ, resultSet.getInt(dbFieldName)));
-                        if(children.size() != 1)
+                        List<?> children = find(dataField.field.getDeclaringClass(), new Filter(dataField.field.getDeclaringClass(), dbFieldName, Op.EQ, resultSet.getInt(dbFieldName)));
+                        if (children.size() != 1)
                             System.out.println("Error ! " + children.size() + " child instead of 1 !");//todo make this better
-                        else{
-                            field.getReferTo().set(entity, children.get(0));
+                        else {
+                            dataField.getReferTo().set(entity, children.get(0));
                         }
-                    }else {
-                        if (String.class.equals(field.field.getType())) {
-                            field.field.set(entity, resultSet.getString(dbFieldName));
-                        } else if (Integer.class.equals(field.field.getType())) {
-                            field.field.set(entity, resultSet.getInt(dbFieldName));
-                        } else {
-                            System.out.println("Unknown type " + field.field.getType().getCanonicalName());
-                        }
+                    } else {
+                        // set the casted value
+                        dataField.field.set(entity, castValue(dataField.field.getType(), resultSet, dbFieldName));
                     }
                 }
                 entities.add(entity);
@@ -132,10 +127,10 @@ public class SQLDatabase extends Database {
         List<String> fieldList = new ArrayList<>();
         List<String> valueList = new ArrayList<>();
         try {
-            for (DataField field : getFields(entry, Options.IGNORE_AUTO_INCREMENT)) {
-                field.field.setAccessible(true);
-                fieldList.add(field.getName());
-                valueList.add(formatValue(field.value));
+            for (DataField dataField : getDataFields(entry, Options.IGNORE_AUTO_INCREMENT)) {
+                dataField.field.setAccessible(true);
+                fieldList.add(dataField.getName());
+                valueList.add(formatValue(dataField.value));
             }
             String fields = String.join(",", fieldList);
             String values = String.join(",", valueList);
@@ -162,12 +157,12 @@ public class SQLDatabase extends Database {
         StringBuilder req = new StringBuilder();
         req.append("update ").append(databaseName).append('.').append(getEntityName(entity.getClass()))
                 .append(" set ");
-        for (DataField fieldsAndValue : getFields(entity, Options.IGNORE_PRIMARY_KEYS)) {
-            req.append(fieldsAndValue.getName()).append(" = ").append(formatValue(fieldsAndValue.value));
+        for (DataField dataField : getDataFields(entity, Options.IGNORE_PRIMARY_KEYS)) {
+            req.append(dataField.getName()).append(" = ").append(formatValue(dataField.value));
         }
         req.append(" where ");
-        for (DataField fieldsAndValue : getFields(entity, Options.ONLY_PRIMARY_KEYS)) {
-            req.append(fieldsAndValue.getName()).append(" = ").append(formatValue(fieldsAndValue.value));
+        for (DataField dataField : getDataFields(entity, Options.ONLY_PRIMARY_KEYS)) {
+            req.append(dataField.getName()).append(" = ").append(formatValue(dataField.value));
         }
         req.append(';');
         try {
@@ -193,6 +188,20 @@ public class SQLDatabase extends Database {
             System.out.println("Unknow type " + value.getClass().getCanonicalName());
             return String.valueOf(value);
         }
+    }
+
+    private Object castValue(Class<?> type, ResultSet resultSet, String dbFieldName) {
+        try {
+            if (String.class.equals(type))
+                return resultSet.getString(dbFieldName);
+            if (Integer.class.equals(type))
+                return resultSet.getInt(dbFieldName);
+            else
+                System.out.println("Unknown type " + type.getCanonicalName());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
 }

@@ -1,7 +1,5 @@
 package fr.unikaz.orm.filters;
 
-import fr.unikaz.orm.Database;
-
 import java.lang.reflect.Field;
 
 public class Filter implements IFilter {

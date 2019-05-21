@@ -1,13 +1,9 @@
 package fr.unikaz.orm;
 
-import com.sun.corba.se.impl.orb.DataCollectorBase;
 import fr.unikaz.orm.annotations.*;
 import fr.unikaz.orm.filters.IFilter;
 
-import javax.xml.crypto.Data;
-import java.awt.image.DataBuffer;
 import java.lang.reflect.Field;
-import java.net.FileNameMap;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,13 +40,13 @@ public abstract class Database {
     }
 
 
-    public static <E> List<DataField> getFields(Class<E> current, Options... opts){
-        return getFields(current, null, opts);
+    public static <E> List<DataField> getDataFields(Class<E> current, Options... opts){
+        return getDataFields(current, null, opts);
     }
-    public static <E> List<DataField> getFields(Object entity, Options... opts){
-        return getFields(entity.getClass(), entity, opts);
+    public static <E> List<DataField> getDataFields(Object entity, Options... opts){
+        return getDataFields(entity.getClass(), entity, opts);
     }
-    public static <E> List<DataField> getFields(Class<E> current, Object entity, Options... opts){
+    public static <E> List<DataField> getDataFields(Class<E> current, Object entity, Options... opts){
         // Handle some options
         boolean ignoreAutoIncrements = false;
         boolean ignorePrimaryKeys = false;
@@ -80,7 +76,7 @@ public abstract class Database {
                 if(entity != null)
                     value = field.get(entity);
                 if(field.isAnnotationPresent(RelativeEntity.class)){
-                    List<DataField> childDataFields = Database.getFields(field.getType(), value, Options.ONLY_PRIMARY_KEYS);
+                    List<DataField> childDataFields = Database.getDataFields(field.getType(), value, Options.ONLY_PRIMARY_KEYS);
                     if(childDataFields.size() == 1 && field.isAnnotationPresent(FieldName.class)){
                         // if the child has only one PK, use the parent custom name for this field
                         DataField childDataField = childDataFields.get(0);
@@ -90,7 +86,7 @@ public abstract class Database {
                     }else{
                         // use generated names
                         for (DataField childDataField : childDataFields) {
-                            childDataField.setSpecificName(Database.getEntityName(current) + "_?_" + Database.getFieldName(childDataField.field));
+                            childDataField.setSpecificName(Database.getEntityName(current) + "_" + Database.getFieldName(childDataField.field));
                             dataFields.add(childDataField);
                         }
                     }
