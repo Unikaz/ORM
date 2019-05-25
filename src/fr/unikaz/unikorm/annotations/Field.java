@@ -7,5 +7,10 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Unsigned {
+public @interface Field {
+    String name() default "";
+    boolean autoIncrement() default false;
+    boolean primaryKey() default false;
+    boolean unsigned() default false;
 }
+

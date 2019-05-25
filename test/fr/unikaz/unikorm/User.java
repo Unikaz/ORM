@@ -1,15 +1,15 @@
 package fr.unikaz.unikorm;
 
 
-import fr.unikaz.unikorm.annotations.*;
+import fr.unikaz.unikorm.annotations.Entity;
+import fr.unikaz.unikorm.annotations.Field;
+import fr.unikaz.unikorm.annotations.IgnoreField;
 
 @Entity(name = "user_test")
 public class User {
-    @AutoIncrement
-    @PrimaryKey
-    @Unsigned
+    @Field(autoIncrement = true, primaryKey = true, unsigned = true)
     public Integer id;
-    @FieldName(name = "name")
+    @Field(name = "name")
     public String name;
     @IgnoreField
     private String ignoredField;

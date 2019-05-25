@@ -10,12 +10,12 @@ The first implementation is only for MySQL, nexts will come later (and be free t
 
 ## Available annotations
 - Entity : overwrite the entity name in DB
-- FieldName : overwrite the field name in DB
-- IgnoreField : this field will not be used by the ORM
+- FieldName : overwrite the localField name in DB
+- IgnoreField : this localField will not be used by the ORM
 - Unsigned
 - AutoIncrement
 - PrimaryKey
 
 ## Filters
-The Filter class allows the creation of filters for the request. The basic Filter is an operation like "field = value". This can be complete using the MultiFilter which use multiple filters, with a AND or OR operator.
+The Filter class allows the creation of filters for the request. The basic Filter is an operation like "localField = value". This can be complete using the MultiFilter which use multiple filters, with a AND or OR operator.
 

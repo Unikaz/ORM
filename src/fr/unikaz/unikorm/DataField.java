@@ -3,44 +3,52 @@ package fr.unikaz.unikorm;
 import java.lang.reflect.Field;
 
 public class DataField {
-    public Field field;
-    public Object value;
-    private String specificName;
-    private Field referTo;
+    public Field localField;
+    public Field distantField;
+    public Class type;
 
-    public DataField(Field field) {
-        this.field = field;
+    public Object value;
+    public String specificName;
+
+    public DataField(Field localField) {
+        this.localField = localField;
     }
 
-    public DataField(Field field, Object value) {
-        this.field = field;
+    public DataField(Field localField, Object value) {
+        this.localField = localField;
         this.value = value;
     }
 
     public String getName() {
         if (specificName != null)
             return specificName;
-        return Database.getFieldName(field);
+        return Database.getFieldName(localField);
     }
 
     public void setSpecificName(String specificName) {
         this.specificName = specificName;
     }
 
-    public Field getReferTo() {
-        return referTo;
+    public Field getDistantField() {
+        return distantField;
     }
 
-    public void setReferTo(Field referTo) {
-        this.referTo = referTo;
+    public void setDistantField(Field distantField) {
+        this.distantField = distantField;
     }
 
     @Override
     public String toString() {
         return "DataField{" +
-                "field=" + field +
+                "localField=" + localField +
                 ", value=" + value +
                 ", specificName='" + specificName + '\'' +
                 '}';
+    }
+
+    public Class<?> getType() {
+        if(type == null)
+            return localField.getType();
+        return type;
     }
 }

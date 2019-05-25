@@ -1,17 +1,17 @@
 package fr.unikaz.unikorm;
 
-import fr.unikaz.unikorm.annotations.*;
+import fr.unikaz.unikorm.annotations.Entity;
+import fr.unikaz.unikorm.annotations.Field;
+import fr.unikaz.unikorm.annotations.RelativeEntity;
 
 import java.util.Date;
 
 @Entity(name = "message_test")
 public class Message {
-    @AutoIncrement
-    @PrimaryKey
-    @Unsigned
+    @Field(autoIncrement = true, primaryKey = true, unsigned = true)
     private Integer id;
-    @FieldName(name = "user_id")
-    @RelativeEntity(target = User.class)
+    @Field(name = "user_id")
+    @RelativeEntity(entity = User.class, fieldName = "id")
     private User user;
 
     private String message;

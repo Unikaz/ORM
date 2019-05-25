@@ -102,9 +102,40 @@ class SQLDatabaseTest {
         // create a message
         Message message = new Message(user, "This is the message", Calendar.getInstance().getTime());
         assert database.insert(message);
-        Message readMessage = database.find(Message.class, new Filter(User.class, "id", Op.EQ, user.id)).get(0);
+        Message readMessage = database.find(Message.class, new Filter("user_id", Op.EQ, user.id)).get(0);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         System.out.println(readMessage);
         assert readMessage.getMessage().equals(message.getMessage());
     }
+
+    @Test
+    void messageModelTest(){
+        //preparation
+        clearTable();
+        database.createTable(User.class);
+        database.createTable(Message.class);
+        database.insert(et1);
+        User et2 = database.find(User.class, new Filter("name", Op.EQ, et1.name)).get(0);
+        database.insert(new Message(et2, "Yop yop !", Calendar.getInstance().getTime()));
+        //
+        MessageModel messageModel = database.find(MessageModel.class, new Filter("user_id", Op.EQ, et2.id)).get(0);
+        assert messageModel.userId == et2.id;
+        System.out.println(messageModel);
+    }
+    @Test
+    void messageModelTest2(){
+        //preparation
+        clearTable();
+        database.createTable(User.class);
+        database.createTable(Message.class);
+        database.insert(et1);
+        User et2 = database.find(User.class, new Filter("name", Op.EQ, et1.name)).get(0);
+        database.insert(new Message(et2, "Yop yop !", Calendar.getInstance().getTime()));
+        //
+        MessageModel messageModel = database.find(MessageModel.class, new Filter("user_id", Op.EQ, et2.id)).get(0);
+        assert messageModel.userId == et2.id;
+        System.out.println(messageModel);
+    }
+
+
 }
