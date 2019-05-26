@@ -1,5 +1,7 @@
 package fr.unikaz.unikorm;
 
+import fr.unikaz.unikorm.annotations.RelativeEntity;
+
 import java.lang.reflect.Field;
 
 public class DataField {
@@ -9,6 +11,8 @@ public class DataField {
 
     public Object value;
     public String specificName;
+
+    public RelativeEntity relativeEntity;
 
     public DataField(Field localField) {
         this.localField = localField;
@@ -22,7 +26,13 @@ public class DataField {
     public String getName() {
         if (specificName != null)
             return specificName;
+        if(relativeEntity != null)
+            return relativeEntity.localField();
         return Database.getFieldName(localField);
+    }
+
+    public String getTargetFieldName(){
+        return Database.getFieldName(distantField);
     }
 
     public void setSpecificName(String specificName) {

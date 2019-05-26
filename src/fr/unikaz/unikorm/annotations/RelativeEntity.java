@@ -10,5 +10,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RelativeEntity {
     Class entity();
-    String fieldName();
+    String localField();
+    String targetField();
 }

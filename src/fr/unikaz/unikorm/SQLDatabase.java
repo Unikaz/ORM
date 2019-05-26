@@ -1,9 +1,9 @@
 package fr.unikaz.unikorm;
 
 import fr.unikaz.unikorm.annotations.Field;
-import fr.unikaz.unikorm.annotations.RelativeEntity;
 import fr.unikaz.unikorm.filters.Filter;
 import fr.unikaz.unikorm.filters.IFilter;
+import fr.unikaz.unikorm.filters.MultiFilter;
 import fr.unikaz.unikorm.filters.Op;
 
 import java.sql.*;
@@ -91,6 +91,8 @@ public class SQLDatabase extends Database {
         System.out.println("SQLDatabase.find");
         try {
             String req = "Select * from " + getEntityName(clazz);
+
+            // filters
             if (filter != null) {
                 req += " where " + filter.toString() + ";";
             }
@@ -103,12 +105,12 @@ public class SQLDatabase extends Database {
                 for (DataField dataField : getDataFields(entity)) { // for each localField in the row
                     dataField.localField.setAccessible(true);
                     String dbFieldName = dataField.getName();
-                    if (dataField.localField.isAnnotationPresent(RelativeEntity.class)){
-                        // make a select to request the child element
-                        RelativeEntity relativeEntity = dataField.localField.getAnnotation(RelativeEntity.class);
-                        List<?> children = find((Class<?>) relativeEntity.entity(), new Filter(relativeEntity.fieldName(), Op.EQ, resultSet.getInt(dbFieldName)));
+                    if (dataField.relativeEntity != null){
+                        // make a select to request the child elements
+                        List<?> children = find((Class<?>) dataField.relativeEntity.entity(),
+                                new Filter(dataField.relativeEntity.targetField(), Op.EQ, resultSet.getInt(dbFieldName)));//dataField.relativeEntity.localField())));
                         if (children.size() != 1)
-                            System.out.println("Error ! " + children.size() + " child instead of 1 !");//todo make this better
+                            dataField.localField.set(entity, children);
                         else {
                             dataField.localField.set(entity, children.get(0));
                         }
@@ -183,6 +185,26 @@ public class SQLDatabase extends Database {
         return false;
     }
 
+    @Override
+    public void fetch(Object object) {
+        // create filters from object
+        MultiFilter filters = new MultiFilter(MultiFilter.FilterType.AND);
+        for (DataField field : getDataFields(object)) {
+            if(field.value != null){
+                filters.add(new Filter(getFieldName(field.localField), Op.EQ, field.value));
+            }
+        }
+        // call find using filters
+        Object object2 = find(object.getClass(), filters).get(0);
+        // map the result on the given object
+        for (java.lang.reflect.Field field : object.getClass().getDeclaredFields()) {
+            try {
+                field.set(object, field.get(object2));
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     private String formatValue(Object value) {
         if (value == null)

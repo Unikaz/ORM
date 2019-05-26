@@ -122,20 +122,23 @@ class SQLDatabaseTest {
         assert messageModel.userId == et2.id;
         System.out.println(messageModel);
     }
+
     @Test
-    void messageModelTest2(){
+    void messageListModelTest(){
         //preparation
         clearTable();
         database.createTable(User.class);
         database.createTable(Message.class);
         database.insert(et1);
         User et2 = database.find(User.class, new Filter("name", Op.EQ, et1.name)).get(0);
-        database.insert(new Message(et2, "Yop yop !", Calendar.getInstance().getTime()));
+        database.insert(new Message(et2, "Yop yop 1 !", Calendar.getInstance().getTime()));
+        database.insert(new Message(et2, "Yop yop 2 !", Calendar.getInstance().getTime()));
+        database.insert(new Message(et2, "Yop yop 3 !", Calendar.getInstance().getTime()));
         //
-        MessageModel messageModel = database.find(MessageModel.class, new Filter("user_id", Op.EQ, et2.id)).get(0);
-        assert messageModel.userId == et2.id;
-        System.out.println(messageModel);
+        MessageListModel messageList = new MessageListModel();
+        messageList.userId = et2.id;
+        database.fetch(messageList);
+        assert messageList.messages.size() == 3;
+        System.out.println(messageList);
     }
-
-
 }

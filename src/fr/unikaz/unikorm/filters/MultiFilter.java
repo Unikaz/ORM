@@ -18,7 +18,7 @@ public class MultiFilter implements IFilter {
         children.addAll(Arrays.stream(filters).collect(Collectors.toList()));
     }
 
-    public void addChild(Filter filter) {
+    public void add(IFilter filter) {
         children.add(filter);
     }
 

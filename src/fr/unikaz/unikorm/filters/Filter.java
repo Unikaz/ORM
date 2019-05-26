@@ -46,9 +46,13 @@ public class Filter implements IFilter {
         String value = o.toString();
         if (o instanceof String)
             value = "'" + o + "'";
+        return getFieldName() + " " + op.get() + " " + value;
+    }
+
+    public String getFieldName() {
         if (field != null)
-            return field.getName() + " " + op.get() + " " + value;
+            return field.getName();
         else
-            return fieldName + " " + op.get() + " " + value;
+            return fieldName;
     }
 }

@@ -77,8 +77,8 @@ public abstract class Database {
                     //get localField info from target
                     for (java.lang.reflect.Field declaredField : relativeEntity.entity().getDeclaredFields()) {
                         Field childFieldOptions = declaredField.getAnnotation(Field.class);
-                        if ((childFieldOptions != null && childFieldOptions.name().equals(relativeEntity.fieldName()))
-                                || declaredField.getName().equals(relativeEntity.fieldName())) {
+                        if ((childFieldOptions != null && childFieldOptions.name().equals(relativeEntity.targetField()))
+                                || declaredField.getName().equals(relativeEntity.targetField())) {
                             DataField dataField = new DataField(field);
                             dataField.setDistantField(declaredField);
                             dataField.type = declaredField.getType();
@@ -86,13 +86,12 @@ public abstract class Database {
                                 dataField.value = declaredField.get(value);
                             if (fieldOptions != null && !fieldOptions.name().equals(""))
                                 dataField.setSpecificName(fieldOptions.name());
-                            else
-                                dataField.setSpecificName(field.getName());
+                            dataField.relativeEntity = relativeEntity;
                             dataFields.add(dataField);
                             break;
                         }
                     }
-                    throw new RuntimeException("Cannot find localField " + relativeEntity.fieldName() + " in " + relativeEntity.entity());
+                    throw new RuntimeException("Cannot find localField " + relativeEntity.targetField() + " in " + relativeEntity.entity());
                 } else {
                     DataField dataField = new DataField(field);
                     dataField.value = value;
@@ -103,4 +102,6 @@ public abstract class Database {
         }
         return dataFields;
     }
+
+    public abstract void fetch(Object object);
 }

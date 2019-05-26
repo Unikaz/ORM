@@ -11,7 +11,7 @@ public class Message {
     @Field(autoIncrement = true, primaryKey = true, unsigned = true)
     private Integer id;
     @Field(name = "user_id")
-    @RelativeEntity(entity = User.class, fieldName = "id")
+    @RelativeEntity(entity = User.class, localField = "user_id", targetField = "id")
     private User user;
 
     private String message;
