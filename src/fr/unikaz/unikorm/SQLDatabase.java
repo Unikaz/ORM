@@ -191,7 +191,7 @@ public class SQLDatabase extends Database {
         MultiFilter filters = new MultiFilter(MultiFilter.FilterType.AND);
         for (DataField field : getDataFields(object)) {
             if(field.value != null){
-                filters.add(new Filter(getFieldName(field.localField), Op.EQ, field.value));
+                filters.add(new Filter(getFieldName(field.localField), Op.EQ, formatValue(field.value)));
             }
         }
         // call find using filters
@@ -199,6 +199,7 @@ public class SQLDatabase extends Database {
         // map the result on the given object
         for (java.lang.reflect.Field field : object.getClass().getDeclaredFields()) {
             try {
+                field.setAccessible(true);
                 field.set(object, field.get(object2));
             } catch (IllegalAccessException e) {
                 e.printStackTrace();

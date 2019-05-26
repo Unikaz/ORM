@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Calendar;
+import java.util.Date;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -87,6 +88,26 @@ class SQLDatabaseTest {
         User e2 = database.find(User.class, new Filter(User.class, "id", Op.EQ, e1.id)).get(0);
         assert e1.id.equals(e2.id);
         assert e2.name.equals(updatedValue);
+    }
+
+    @Test
+    void fetch(){
+        clearTable();
+        database.createTable(User.class);
+        database.createTable(Message.class);
+        // test user
+        User user = new User("John Snow");
+        database.insert(user);
+        database.fetch(user);
+        assert user.id.equals(1);
+        assert user.name.equals("John Snow");
+        // test message
+        Date date = Calendar.getInstance().getTime();
+        Message message = new Message(user, "test message", date);
+        database.insert(message);
+        database.fetch(message);
+        assert message.getMessage().equals("test message");
+        assert message.getId().equals(1);
     }
 
     @Test

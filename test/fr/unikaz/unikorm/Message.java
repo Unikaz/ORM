@@ -30,6 +30,10 @@ public class Message {
         return message;
     }
 
+    public Integer getId() {
+        return id;
+    }
+
     @Override
     public String toString() {
         return "Message{" +
@@ -38,5 +42,9 @@ public class Message {
                 ",\n message='" + message + '\'' +
                 ",\n date=" + date +
                 '}';
+    }
+
+    public Date getDate() {
+        return date;
     }
 }

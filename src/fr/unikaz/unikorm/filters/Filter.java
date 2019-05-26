@@ -44,7 +44,7 @@ public class Filter implements IFilter {
     @Override
     public String toString() {
         String value = o.toString();
-        if (o instanceof String)
+        if (o instanceof String && value.charAt(0) != '\'')
             value = "'" + o + "'";
         return getFieldName() + " " + op.get() + " " + value;
     }
