@@ -5,6 +5,8 @@ It's goal is also to give you a standard way to access multiple type of datasour
 
 The first implementation is only for MySQL, nexts will come later (and be free to participate !)
 
+Java version : 8
+
 ## Available datasource
 - MySQL
 
