@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -154,5 +155,18 @@ class MySQLDatabaseTest {
         messageList.userId = et2.id;
         database.fetch(messageList);
         assert messageList.messages.size() == 3;
+    }
+
+    @Test
+    void inTest() throws Exception{
+        //preparation
+        clearTable();
+        database.createTable(User.class);
+        database.insert(new User("Pierre"));
+        database.insert(new User("Paul"));
+        database.insert(new User("Jacques"));
+        //
+        List<User> u = database.find(User.class, new Filter("name", Op.IN, new String[]{"Pierre", "Paul"}));
+        assert u.size() == 2;
     }
 }

@@ -182,7 +182,7 @@ public class MySQLDatabase extends Database {
         MultiFilter filters = new MultiFilter(MultiFilter.FilterType.AND);
         for (DataField field : getDataFields(object)) {
             if (field.value != null) {
-                filters.add(new Filter(getFieldName(field.localField), Op.EQ, formatValue(field.value)));
+                filters.add(new Filter(getFieldName(field.localField), Op.EQ, field.value));
             }
         }
         // call find using filters
@@ -198,7 +198,7 @@ public class MySQLDatabase extends Database {
         }
     }
 
-    private String formatValue(Object value) throws Exception {
+    public static String formatValue(Object value) throws Exception {
         if (value == null)
             return "null";
         else if (value instanceof String)
@@ -210,7 +210,7 @@ public class MySQLDatabase extends Database {
         throw new Exception("Unknow type " + value.getClass().getCanonicalName());
     }
 
-    private Object castValue(Class<?> type, ResultSet resultSet, String dbFieldName) throws Exception {
+    public static Object castValue(Class<?> type, ResultSet resultSet, String dbFieldName) throws Exception {
 
         if (String.class.equals(type))
             return resultSet.getString(dbFieldName);
