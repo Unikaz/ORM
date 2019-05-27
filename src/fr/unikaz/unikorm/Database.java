@@ -6,11 +6,13 @@ import fr.unikaz.unikorm.annotations.IgnoreField;
 import fr.unikaz.unikorm.annotations.RelativeEntity;
 import fr.unikaz.unikorm.filters.IFilter;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Database {
 
+    //todo create javadoc
     public abstract <E> boolean createTable(Class<E> clazz);
 
     public <E> List<E> find(Class<E> clazz) {
@@ -23,6 +25,7 @@ public abstract class Database {
 
     public abstract <E> boolean update(E entity);
 
+    public abstract void fetch(Object object);
 
     //=====================================
     // Process Annotations
@@ -63,7 +66,7 @@ public abstract class Database {
         List<DataField> dataFields = new ArrayList<>();
         for (java.lang.reflect.Field field : current.getDeclaredFields()) {
             Field fieldOptions = field.getAnnotation(Field.class);
-            if (field.isAnnotationPresent(IgnoreField.class)) continue;
+            if (field.isAnnotationPresent(IgnoreField.class) || Modifier.isTransient(field.getModifiers())) continue;
             if (ignoreAutoIncrements && fieldOptions != null && fieldOptions.autoIncrement()) continue;
             if (ignorePrimaryKeys && fieldOptions != null && fieldOptions.primaryKey()) continue;
             if (onlyPrimaryKeys && (fieldOptions == null || !fieldOptions.primaryKey())) continue;
@@ -82,7 +85,7 @@ public abstract class Database {
                             DataField dataField = new DataField(field);
                             dataField.setDistantField(declaredField);
                             dataField.type = declaredField.getType();
-                            if(value != null)
+                            if (value != null)
                                 dataField.value = declaredField.get(value);
                             if (fieldOptions != null && !fieldOptions.name().equals(""))
                                 dataField.setSpecificName(fieldOptions.name());
@@ -102,6 +105,4 @@ public abstract class Database {
         }
         return dataFields;
     }
-
-    public abstract void fetch(Object object);
 }
