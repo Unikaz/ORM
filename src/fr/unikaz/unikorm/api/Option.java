@@ -1,4 +1,4 @@
-package fr.unikaz.unikorm;
+package fr.unikaz.unikorm.api;
 
 public enum Option {
     IGNORE_AUTO_INCREMENT(1),

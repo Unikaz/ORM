@@ -1,10 +1,13 @@
-package fr.unikaz.unikorm;
+package fr.unikaz.unikorm.connectors.sql;
 
 import fr.unikaz.unikorm.annotations.Field;
-import fr.unikaz.unikorm.filters.Filter;
-import fr.unikaz.unikorm.filters.IFilter;
-import fr.unikaz.unikorm.filters.MultiFilter;
-import fr.unikaz.unikorm.filters.Op;
+import fr.unikaz.unikorm.api.DataField;
+import fr.unikaz.unikorm.api.Database;
+import fr.unikaz.unikorm.api.IFilter;
+import fr.unikaz.unikorm.api.Option;
+import fr.unikaz.unikorm.connectors.sql.filters.Filter;
+import fr.unikaz.unikorm.connectors.sql.filters.MultiFilter;
+import fr.unikaz.unikorm.connectors.sql.filters.Op;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -14,16 +17,16 @@ import java.util.Date;
 import java.util.List;
 
 
-public class SQLDatabase extends Database {
+public class MySQLDatabase extends Database {
 
     private String databaseName;
     private Connection connection;
 
-    public SQLDatabase(String databaseName, String login, String password) {
+    public MySQLDatabase(String databaseName, String login, String password) {
         this(databaseName, "127.0.0.1", 3306, login, password);
     }
 
-    public SQLDatabase(String databaseName, String address, int port, String login, String password) {
+    public MySQLDatabase(String databaseName, String address, int port, String login, String password) {
         try {
             connection = DriverManager.getConnection("jdbc:mysql://" + address + ":" + port + "/" + databaseName +
                             "?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC"
@@ -36,7 +39,7 @@ public class SQLDatabase extends Database {
 
     @Override
     public <E> boolean createTable(Class<E> clazz) {
-        System.out.println("SQLDatabase.createTable");
+        System.out.println("MySQLDatabase.createTable");
         StringBuilder request = new StringBuilder();
         List<String> primaryKeys = new ArrayList<>();
         request.append("create table if not exists ").append(getEntityName(clazz)).append("(");
@@ -88,7 +91,7 @@ public class SQLDatabase extends Database {
 
     @Override
     public <E> List<E> find(Class<E> clazz, IFilter filter) {
-        System.out.println("SQLDatabase.find");
+        System.out.println("MySQLDatabase.find");
         try {
             String req = "Select * from " + getEntityName(clazz);
 
@@ -134,7 +137,7 @@ public class SQLDatabase extends Database {
 
     @Override
     public <E> boolean insert(E entry) {
-        System.out.println("SQLDatabase.insert");
+        System.out.println("MySQLDatabase.insert");
         List<String> fieldList = new ArrayList<>();
         List<String> valueList = new ArrayList<>();
         try {

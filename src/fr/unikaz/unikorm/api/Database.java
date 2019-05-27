@@ -1,10 +1,9 @@
-package fr.unikaz.unikorm;
+package fr.unikaz.unikorm.api;
 
 import fr.unikaz.unikorm.annotations.Entity;
 import fr.unikaz.unikorm.annotations.Field;
 import fr.unikaz.unikorm.annotations.IgnoreField;
 import fr.unikaz.unikorm.annotations.RelativeEntity;
-import fr.unikaz.unikorm.filters.IFilter;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;

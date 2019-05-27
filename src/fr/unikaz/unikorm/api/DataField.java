@@ -1,4 +1,4 @@
-package fr.unikaz.unikorm;
+package fr.unikaz.unikorm.api;
 
 import fr.unikaz.unikorm.annotations.RelativeEntity;
 

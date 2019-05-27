@@ -1,4 +1,4 @@
-package fr.unikaz.unikorm;
+package fr.unikaz.unikorm.api;
 
 public class Options {
     private int options;

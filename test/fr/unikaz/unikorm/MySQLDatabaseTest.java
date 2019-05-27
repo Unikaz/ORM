@@ -1,7 +1,9 @@
 package fr.unikaz.unikorm;
 
-import fr.unikaz.unikorm.filters.Filter;
-import fr.unikaz.unikorm.filters.Op;
+import fr.unikaz.unikorm.api.Database;
+import fr.unikaz.unikorm.connectors.sql.MySQLDatabase;
+import fr.unikaz.unikorm.connectors.sql.filters.Filter;
+import fr.unikaz.unikorm.connectors.sql.filters.Op;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -13,9 +15,9 @@ import java.util.Date;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class SQLDatabaseTest {
+class MySQLDatabaseTest {
 
-    public SQLDatabase database = new SQLDatabase("orm_test", "root", "");
+    public MySQLDatabase database = new MySQLDatabase("orm_test", "root", "");
     public User et1 = new User("John Snow");
     public Connection connection;
 

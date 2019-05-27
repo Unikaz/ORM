@@ -1,4 +1,6 @@
-package fr.unikaz.unikorm.filters;
+package fr.unikaz.unikorm.connectors.sql.filters;
+
+import fr.unikaz.unikorm.api.IFilter;
 
 import java.lang.reflect.Field;
 

@@ -1,4 +1,4 @@
-package fr.unikaz.unikorm.filters;
+package fr.unikaz.unikorm.connectors.sql.filters;
 
 public enum Op{
     EQ("="),
