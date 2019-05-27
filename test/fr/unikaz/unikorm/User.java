@@ -13,6 +13,7 @@ public class User {
     public String name;
     @IgnoreField
     private String ignoredField;
+    transient private String testTransient;
 
     public User() {
     }

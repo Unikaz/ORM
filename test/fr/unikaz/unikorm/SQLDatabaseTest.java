@@ -91,7 +91,7 @@ class SQLDatabaseTest {
     }
 
     @Test
-    void fetch(){
+    void fetch() {
         clearTable();
         database.createTable(User.class);
         database.createTable(Message.class);
@@ -111,7 +111,7 @@ class SQLDatabaseTest {
     }
 
     @Test
-    void compositeTest(){
+    void compositeTest() {
         clearTable();
         database.createTable(User.class);
         database.createTable(Message.class);
@@ -130,7 +130,7 @@ class SQLDatabaseTest {
     }
 
     @Test
-    void messageModelTest(){
+    void messageModelTest() {
         //preparation
         clearTable();
         database.createTable(User.class);
@@ -145,7 +145,7 @@ class SQLDatabaseTest {
     }
 
     @Test
-    void messageListModelTest(){
+    void messageListModelTest() {
         //preparation
         clearTable();
         database.createTable(User.class);

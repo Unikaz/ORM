@@ -1,31 +1,31 @@
 package fr.unikaz.unikorm;
 
 public class Options {
-    private boolean[] options;
+    private int options;
 
     public Options(Option... options) {
-        this.options = new boolean[Option.maxId];
+        this.options = 0;
         for (Option option : options) {
-            this.options[option.id] = true;
+            this.options |= 1 << option.id;
         }
     }
 
     public boolean has(Option opt) {
-        return opt != null && options[opt.id];
+        return (options & (1 << opt.id)) != 0;
     }
 
     public void set(Option opt, boolean value) {
-        if (opt != null)
-            options[opt.id] = value;
+        if (value)
+            this.options |= 1 << opt.id;
+        else
+            this.options &= ~(1 << opt.id);
     }
 
     public void add(Option opt) {
-        if (opt != null)
-            options[opt.id] = true;
+        this.options |=  1 << opt.id;
     }
 
     public void remove(Option opt) {
-        if (opt != null)
-            options[opt.id] = false;
+        this.options &= ~(1 << opt.id);
     }
 }
