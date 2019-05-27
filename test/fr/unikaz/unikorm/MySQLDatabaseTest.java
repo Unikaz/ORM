@@ -58,22 +58,17 @@ class MySQLDatabaseTest {
         database.insert(et1);
         User et = database.find(User.class, new Filter(User.class, "id", Op.EQ, 1)).get(0);
         assertEquals(et.name, et1.name);
-
         String aValue = "An interesting value";
-
         // insert some more data
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 3; i++) {
             database.insert(new User(aValue));
         }
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 3; i++) {
             database.insert(new User(i + ""));
         }
-
-        assert database.find(User.class, new Filter(User.class, "name", Op.EQ, aValue)).size() == 10;
-        assert database.find(User.class, new Filter(User.class, "id", Op.EQ, 10)).get(0).name.equals(aValue);
-        assert !database.find(User.class, new Filter(User.class, "id", Op.EQ, 15)).get(0).name.equals(aValue);
-
-
+        assert database.find(User.class, new Filter(User.class, "name", Op.EQ, aValue)).size() == 3;
+        assert database.find(User.class, new Filter(User.class, "id", Op.EQ, 2)).get(0).name.equals(aValue);
+        assert !database.find(User.class, new Filter(User.class, "id", Op.EQ, 5)).get(0).name.equals(aValue);
     }
 
     @Test
@@ -126,8 +121,6 @@ class MySQLDatabaseTest {
         Message message = new Message(user, "This is the message", Calendar.getInstance().getTime());
         assert database.insert(message);
         Message readMessage = database.find(Message.class, new Filter("user_id", Op.EQ, user.id)).get(0);
-        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        System.out.println(readMessage);
         assert readMessage.getMessage().equals(message.getMessage());
     }
 
@@ -143,7 +136,6 @@ class MySQLDatabaseTest {
         //
         MessageModel messageModel = database.find(MessageModel.class, new Filter("user_id", Op.EQ, et2.id)).get(0);
         assert messageModel.userId == et2.id;
-        System.out.println(messageModel);
     }
 
     @Test
@@ -162,6 +154,5 @@ class MySQLDatabaseTest {
         messageList.userId = et2.id;
         database.fetch(messageList);
         assert messageList.messages.size() == 3;
-        System.out.println(messageList);
     }
 }
