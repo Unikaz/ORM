@@ -17,9 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MySQLDatabaseTest {
 
-    public MySQLDatabase database = new MySQLDatabase("orm_test", "root", "");
-    public User et1 = new User("John Snow");
-    public Connection connection;
+    private MySQLDatabase database = new MySQLDatabase("orm_test", "root", "");
+    private User et1 = new User("John Snow");
 
 
     void clearTable() {
@@ -27,7 +26,7 @@ class MySQLDatabaseTest {
             // some introspection to drop the table without changing the scope of `connection`
             Field connectionF = database.getClass().getDeclaredField("connection");
             connectionF.setAccessible(true);
-            connection = ((Connection) connectionF.get(database));
+            Connection connection = ((Connection) connectionF.get(database));
             String req = "drop table " + Database.getEntityName(User.class) + ";";
             connection.prepareStatement(req).execute();
             String req2 = "drop table " + Database.getEntityName(Message.class) + ";";
@@ -43,17 +42,18 @@ class MySQLDatabaseTest {
     void createTable() {
         clearTable();
         assertTrue(database.createTable(User.class));
+        assertTrue(database.createTable(Message.class));
     }
 
 
     @Test
-    void insert() {
+    void insert() throws Exception {
         database.createTable(User.class);
         assert database.insert(et1);
     }
 
     @Test
-    void find() {
+    void find() throws Exception {
         database.createTable(User.class);
         database.insert(et1);
         User et = database.find(User.class, new Filter(User.class, "id", Op.EQ, 1)).get(0);
@@ -72,7 +72,7 @@ class MySQLDatabaseTest {
     }
 
     @Test
-    void update() {
+    void update() throws Exception {
         clearTable();
         database.createTable(User.class);
         String initialValue = "update: initial value";
@@ -88,7 +88,7 @@ class MySQLDatabaseTest {
     }
 
     @Test
-    void fetch() {
+    void fetch() throws Exception {
         clearTable();
         database.createTable(User.class);
         database.createTable(Message.class);
@@ -108,7 +108,7 @@ class MySQLDatabaseTest {
     }
 
     @Test
-    void compositeTest() {
+    void compositeTest() throws Exception {
         clearTable();
         database.createTable(User.class);
         database.createTable(Message.class);
@@ -125,7 +125,7 @@ class MySQLDatabaseTest {
     }
 
     @Test
-    void messageModelTest() {
+    void messageModelTest() throws Exception {
         //preparation
         clearTable();
         database.createTable(User.class);
@@ -139,7 +139,7 @@ class MySQLDatabaseTest {
     }
 
     @Test
-    void messageListModelTest() {
+    void messageListModelTest() throws Exception {
         //preparation
         clearTable();
         database.createTable(User.class);

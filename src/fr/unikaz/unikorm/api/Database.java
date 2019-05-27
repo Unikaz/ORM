@@ -14,17 +14,17 @@ public abstract class Database {
     //todo create javadoc
     public abstract <E> boolean createTable(Class<E> clazz);
 
-    public <E> List<E> find(Class<E> clazz) {
+    public <E> List<E> find(Class<E> clazz) throws Exception {
         return find(clazz, null);
     }
 
-    public abstract <E> List<E> find(Class<E> clazz, IFilter filter);
+    public abstract <E> List<E> find(Class<E> clazz, IFilter filter) throws Exception;
 
-    public abstract <E> boolean insert(E entry);
+    public abstract <E> boolean insert(E entry) throws Exception;
 
-    public abstract <E> boolean update(E entity);
+    public abstract <E> boolean update(E entity) throws Exception;
 
-    public abstract void fetch(Object object);
+    public abstract void fetch(Object object) throws Exception;
 
     //=====================================
     // Process Annotations
@@ -77,6 +77,7 @@ public abstract class Database {
                 RelativeEntity relativeEntity = field.getAnnotation(RelativeEntity.class);
                 if (relativeEntity != null) {
                     //get localField info from target
+                    boolean found = false;
                     for (java.lang.reflect.Field declaredField : relativeEntity.entity().getDeclaredFields()) {
                         Field childFieldOptions = declaredField.getAnnotation(Field.class);
                         if ((childFieldOptions != null && childFieldOptions.name().equals(relativeEntity.targetField()))
@@ -90,16 +91,19 @@ public abstract class Database {
                                 dataField.setSpecificName(fieldOptions.name());
                             dataField.relativeEntity = relativeEntity;
                             dataFields.add(dataField);
+                            found = true;
                             break;
                         }
                     }
-                    throw new RuntimeException("Cannot find localField " + relativeEntity.targetField() + " in " + relativeEntity.entity());
+                    if (!found)
+                        throw new RuntimeException("Cannot find localField " + relativeEntity.targetField() + " in " + relativeEntity.entity());
                 } else {
                     DataField dataField = new DataField(field);
                     dataField.value = value;
                     dataFields.add(dataField);
                 }
-            } catch (Exception e) {
+            } catch (IllegalAccessException ignored) {
+                // no exception raised, as we use the setAccessible(true)
             }
         }
         return dataFields;

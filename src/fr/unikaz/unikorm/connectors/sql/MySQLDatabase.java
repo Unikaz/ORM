@@ -55,7 +55,6 @@ public class MySQLDatabase extends Database {
             else if (Date.class.isAssignableFrom(dataField.getType()))
                 request.append("datetime");
 
-
             // handle annotations
             if (dataField.localField.isAnnotationPresent(Field.class)) {
                 Field fieldOptions = dataField.localField.getAnnotation(Field.class);
@@ -68,21 +67,18 @@ public class MySQLDatabase extends Database {
                         primaryKeys.add(fieldName);
                 }
             }
-
             request.append(", ");
         }
         //append primary keys
         if (!primaryKeys.isEmpty())
             request.append("primary key (").append(String.join(",", primaryKeys)).append(')');
-        request.append(')')
-                .append("engine=INNODB;");
+        request.append(')').append("engine=INNODB;");
 
         try {
             System.out.println(request.toString());
             PreparedStatement preparedStatement = connection.prepareStatement(request.toString());
             preparedStatement.executeUpdate();
             return true;
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -90,7 +86,7 @@ public class MySQLDatabase extends Database {
     }
 
     @Override
-    public <E> List<E> find(Class<E> clazz, IFilter filter) {
+    public <E> List<E> find(Class<E> clazz, IFilter filter) throws Exception {
         System.out.println("MySQLDatabase.find");
         try {
             String req = "Select * from " + getEntityName(clazz);
@@ -108,7 +104,7 @@ public class MySQLDatabase extends Database {
                 for (DataField dataField : getDataFields(entity)) { // for each localField in the row
                     dataField.localField.setAccessible(true);
                     String dbFieldName = dataField.getName();
-                    if (dataField.relativeEntity != null){
+                    if (dataField.relativeEntity != null) {
                         // make a select to request the child elements
                         List<?> children = find((Class<?>) dataField.relativeEntity.entity(),
                                 new Filter(dataField.relativeEntity.targetField(), Op.EQ, resultSet.getInt(dbFieldName)));//dataField.relativeEntity.localField())));
@@ -126,48 +122,45 @@ public class MySQLDatabase extends Database {
             }
             return entities;
 
-        } catch (SQLException | IllegalAccessException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            // not throw as we use setAccessible(true)
         } catch (InstantiationException e) {
-            System.out.println("You have to define an empty constructor for entity " + clazz.getCanonicalName());
-            e.printStackTrace();
+            throw new Exception("You have to define an empty constructor for " + clazz.getCanonicalName(), e);
         }
         return null;
     }
 
     @Override
-    public <E> boolean insert(E entry) {
+    public <E> boolean insert(E entry) throws Exception {
         System.out.println("MySQLDatabase.insert");
         List<String> fieldList = new ArrayList<>();
         List<String> valueList = new ArrayList<>();
-        try {
-            for (DataField dataField : getDataFields(entry, Option.IGNORE_AUTO_INCREMENT)) {
-                dataField.localField.setAccessible(true);
-                fieldList.add(dataField.getName());
-                valueList.add(formatValue(dataField.value));
-            }
-            String fields = String.join(",", fieldList);
-            String values = String.join(",", valueList);
-            String req = new StringBuilder()
-                    .append("Insert into ")
-                    .append(databaseName).append('.').append(getEntityName(entry.getClass()))
-                    .append(" (")
-                    .append(fields)
-                    .append(") values (")
-                    .append(values)
-                    .append(");")
-                    .toString();
 
-            System.out.println(req.toString());
-            return connection.prepareStatement(req).executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
+        for (DataField dataField : getDataFields(entry, Option.IGNORE_AUTO_INCREMENT)) {
+            dataField.localField.setAccessible(true);
+            fieldList.add(dataField.getName());
+            valueList.add(formatValue(dataField.value));
         }
-        return false;
+        String fields = String.join(",", fieldList);
+        String values = String.join(",", valueList);
+        String req = new StringBuilder()
+                .append("Insert into ")
+                .append(databaseName).append('.').append(getEntityName(entry.getClass()))
+                .append(" (")
+                .append(fields)
+                .append(") values (")
+                .append(values)
+                .append(");")
+                .toString();
+
+        System.out.println(req);
+        return connection.prepareStatement(req).executeUpdate() > 0;
     }
 
     @Override
-    public <E> boolean update(E entity) {
+    public <E> boolean update(E entity) throws Exception {
         StringBuilder req = new StringBuilder();
         req.append("update ").append(databaseName).append('.').append(getEntityName(entity.getClass()))
                 .append(" set ");
@@ -179,21 +172,16 @@ public class MySQLDatabase extends Database {
             req.append(dataField.getName()).append(" = ").append(formatValue(dataField.value));
         }
         req.append(';');
-        try {
-            int res = connection.prepareStatement(req.toString()).executeUpdate();
-            return res > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return false;
+        int res = connection.prepareStatement(req.toString()).executeUpdate();
+        return res > 0;
     }
 
     @Override
-    public void fetch(Object object) {
+    public void fetch(Object object) throws Exception {
         // create filters from object
         MultiFilter filters = new MultiFilter(MultiFilter.FilterType.AND);
         for (DataField field : getDataFields(object)) {
-            if(field.value != null){
+            if (field.value != null) {
                 filters.add(new Filter(getFieldName(field.localField), Op.EQ, formatValue(field.value)));
             }
         }
@@ -205,12 +193,12 @@ public class MySQLDatabase extends Database {
                 field.setAccessible(true);
                 field.set(object, field.get(object2));
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
+                // ignored as we use setAccessible(true)
             }
         }
     }
 
-    private String formatValue(Object value) {
+    private String formatValue(Object value) throws Exception {
         if (value == null)
             return "null";
         else if (value instanceof String)
@@ -219,25 +207,18 @@ public class MySQLDatabase extends Database {
             return String.valueOf(value);
         else if (value instanceof Date)
             return "'" + new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(value) + "'";
-        else {
-            System.out.println("Unknow type " + value.getClass().getCanonicalName());
-            return String.valueOf(value);
-        }
+        throw new Exception("Unknow type " + value.getClass().getCanonicalName());
     }
 
-    private Object castValue(Class<?> type, ResultSet resultSet, String dbFieldName) {
-        try {
-            if (String.class.equals(type))
-                return resultSet.getString(dbFieldName);
-            if (Integer.class.equals(type) || type.equals(Integer.TYPE))
-                return resultSet.getInt(dbFieldName);
-            if (Date.class.equals(type))
-                return resultSet.getTimestamp(dbFieldName, Calendar.getInstance());
-            System.out.println("Unknown type " + type.getCanonicalName() + " for " + dbFieldName);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+    private Object castValue(Class<?> type, ResultSet resultSet, String dbFieldName) throws Exception {
+
+        if (String.class.equals(type))
+            return resultSet.getString(dbFieldName);
+        if (Integer.class.equals(type) || type.equals(Integer.TYPE))
+            return resultSet.getInt(dbFieldName);
+        if (Date.class.equals(type))
+            return resultSet.getTimestamp(dbFieldName, Calendar.getInstance());
+        throw new Exception("Unknow type " + type.getCanonicalName());
     }
 
 }
